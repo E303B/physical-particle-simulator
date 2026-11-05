@@ -1,0 +1,26 @@
+body{
+    background-color: tan;
+    overflow: hidden;
+}
+
+#canvas{
+    background-color: #f5f5f5;
+    top:0;
+    right:0;
+    position:absolute;
+    border-radius:30px;
+}
+
+#settings{
+    background-color: rgb(161 161 161 / 0.75);
+    overflow-y: scroll;
+    min-width:25svw;
+    min-height:100svh;
+    top:0;
+    left:0;
+    position:absolute;
+    direction: rtl;
+    text-align: left;
+    padding: 20px;
+    border-radius:30px
+}
