@@ -22,10 +22,13 @@ let minDist=5;
 let maxDist=50;
 let friction=0.9999;
 
+let C_value = 9;
+let C_power=-6;
+
 let temperature=1;
 
 class Dot{
-    constructor(x, y, mass, color, size){
+    constructor(x, y, mass, color, size, charge){
         this.x=x;
         this.y=y;
         this.speedX=0;
@@ -33,6 +36,7 @@ class Dot{
         this.mass=mass;
         this.color=color;
         this.size=size;
+        this.charge=charge;
     }
     render(cameraX, cameraY, cameraSize){
         context.drawCircle(this.color, (this.x-cameraX)*cameraSize, (this.y-cameraY)*cameraSize, cameraSize*this.size);
@@ -68,33 +72,44 @@ const calculateForces=function(dots, tps){
             if(r<doti.size+dotj.size){
                 const centerX=(doti.x+dotj.x)/2;
                 const centerY=(doti.y+dotj.y)/2;
-                dotj.x=centerX+Math.sin(d)*(doti.size+dotj.size)/2;
-                dotj.y=centerY+Math.cos(d)*(doti.size+dotj.size)/2;
-                doti.x=centerX-Math.sin(d)*(doti.size+dotj.size)/2;
-                doti.y=centerY-Math.cos(d)*(doti.size+dotj.size)/2;
+                dotj.x=centerX+Math.sin(d)*(doti.size+dotj.size+1)/2;
+                dotj.y=centerY-Math.cos(d)*(doti.size+dotj.size+1)/2;
+                doti.x=centerX-Math.sin(d)*(doti.size+dotj.size+1)/2;
+                doti.y=centerY+Math.cos(d)*(doti.size+dotj.size+1)/2;
+                context.drawLine("#000000", dotj.x*cameraSize, dotj.y*cameraSize, (doti.x-dotj.x)*cameraSize, (doti.y-dotj.y)*cameraSize, 10)
             }
             if(r<minDist||r>maxDist)continue;
-            const force=G_value*Math.pow(10, G_power)*doti.mass*dotj.mass/Math.pow(r, 2);
-            dotj.dir=d+Math.PI;
-            doti.speedX+=Math.sin(d)*force/tps;
-            doti.speedY+=Math.cos(d)*force/tps;
-            dotj.speedX-=Math.sin(d)*force/tps;
-            dotj.speedY-=Math.cos(d)*force/tps;
+
+
+            const gravity=G_value*Math.pow(10, G_power)*doti.mass*dotj.mass/Math.pow(r, 2);
+            doti.speedX+=Math.sin(d)*gravity/tps;
+            doti.speedY+=Math.cos(d)*gravity/tps;
+            dotj.speedX-=Math.sin(d)*gravity/tps;
+            dotj.speedY-=Math.cos(d)*gravity/tps;
+
+            const coulomb=C_value*Math.pow(10, C_power)*doti.charge*doti.charge/Math.pow(r, 2);
+            doti.speedX-=Math.sin(d)*coulomb/tps;
+            doti.speedY-=Math.cos(d)*coulomb/tps;
+            dotj.speedX+=Math.sin(d)*coulomb/tps;
+            dotj.speedY+=Math.cos(d)*coulomb/tps;
         }
     }
 }
 
+let cameraSize=10;
+let cameraX=0,cameraY=0;
+
 const tick = function(tps){
+    context.drawRect("#f5f5f5", 0, 0, docWidth, docHeight)
+    for(let i in dots){
+        let dot = dots[i]
+        dot.render(cameraX, cameraY, cameraSize);
+    }
     for(let i in dots){
         let dot = dots[i];
         dot.tick(tps);
     }
     calculateForces(dots, tps)
-    context.drawRect("#f5f5f5", 0, 0, docWidth, docHeight)
-    for(let i in dots){
-        let dot = dots[i]
-        dot.render(0, 0, 10);
-    }
     currentTick=setInterval(tick, 1000/tps, tps)
 }
 
@@ -105,7 +120,8 @@ const generateRandomDots=(N, rweight=-1)=>{
         let weight;
         if(rweight==-1)weight=randomFloat(0.1, 100);
         else weight=rweight
-        dots.push(new Dot(randomFloat(0, 100), randomFloat(0, 100), weight, getRandomColorHex(), Math.pow(weight, 1/8)))
+        let charge=randomFloat(-10, 10);
+        dots.push(new Dot(randomFloat(0, 100), randomFloat(0, 100), weight, rgbToHex(255-Math.round((charge+10)/20*255), 0, Math.round((charge+10)/20*255)), Math.pow(weight, 1/8), charge))
     }
 }
 

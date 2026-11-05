@@ -14,3 +14,12 @@ const isNumber=(x, noStr=false) => (typeof x === 'number' || x instanceof Number
         isFinite(x);
 
 const randomFloat = (min, max) => Math.random() * (max - min) + min;
+
+function componentToHex(c) {
+  var hex = c.toString(16);
+  return hex.length == 1 ? "0" + hex : hex;
+}
+
+function rgbToHex(r, g, b) {
+  return "#" + componentToHex(r) + componentToHex(g) + componentToHex(b);
+}
