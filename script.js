@@ -16,10 +16,13 @@ const context = canvas.getContext("2d");
 
 const dots = [];
 
-let G=6.67*Math.pow(10,-4);
+let G_value=6.67;
+let G_power=-8;
 let minDist=5;
 let maxDist=50;
 let friction=0.9999;
+
+let temperature=1;
 
 class Dot{
     constructor(x, y, mass, color, size){
@@ -35,12 +38,12 @@ class Dot{
         context.drawCircle(this.color, (this.x-cameraX)*cameraSize, (this.y-cameraY)*cameraSize, cameraSize*this.size);
     }
     tick(tps){
-        this.x+=this.speedX/tps;
+        this.x+=this.speedX/tps*temperature;
         if (this.x>105)
             this.x=5;
         if (this.y<5)
             this.x=105;
-        this.y+=this.speedY/tps;
+        this.y+=this.speedY/tps*temperature;
         if (this.y>85)
             this.y=5;
         if (this.y<5)
@@ -65,13 +68,13 @@ const calculateForces=function(dots, tps){
             if(r<doti.size+dotj.size){
                 const centerX=(doti.x+dotj.x)/2;
                 const centerY=(doti.y+dotj.y)/2;
-                dotj.x=centerX+Math.sin(d)*(doti.size+dotj.size+2)/2;
-                dotj.y=centerY+Math.cos(d)*(doti.size+dotj.size+2)/2;
-                doti.x=centerX-Math.sin(d)*(doti.size+dotj.size+2)/2;
-                doti.y=centerY-Math.cos(d)*(doti.size+dotj.size+2)/2;
+                dotj.x=centerX+Math.sin(d)*(doti.size+dotj.size)/2;
+                dotj.y=centerY+Math.cos(d)*(doti.size+dotj.size)/2;
+                doti.x=centerX-Math.sin(d)*(doti.size+dotj.size)/2;
+                doti.y=centerY-Math.cos(d)*(doti.size+dotj.size)/2;
             }
             if(r<minDist||r>maxDist)continue;
-            const force=G*doti.mass*dotj.mass/Math.pow(r, 2);
+            const force=G_value*Math.pow(10, G_power)*doti.mass*dotj.mass/Math.pow(r, 2);
             dotj.dir=d+Math.PI;
             doti.speedX+=Math.sin(d)*force/tps;
             doti.speedY+=Math.cos(d)*force/tps;
@@ -95,9 +98,35 @@ const tick = function(tps){
     currentTick=setInterval(tick, 1000/tps, tps)
 }
 
-dots.push(new Dot(randomFloat(0, 100), randomFloat(0, 100), 1, "#FF0000", 1))
 
-dots.push(new Dot(randomFloat(0, 100), randomFloat(0, 100), 1, "#00FF00", 1))
-dots.push(new Dot(randomFloat(0, 100), randomFloat(0, 100), 1, "#0000FF", 1))
+const generateRandomDots=(N, rweight=-1)=>{
 
+    for(let i=0;i<N;i++){
+        let weight;
+        if(rweight==-1)weight=randomFloat(0.1, 100);
+        else weight=rweight
+        dots.push(new Dot(randomFloat(0, 100), randomFloat(0, 100), weight, getRandomColorHex(), Math.pow(weight, 1/8)))
+    }
+}
+
+
+generateRandomDots(50, 1)
 tick(50);
+
+const G_value_range=document.getElementById("G-value-range");
+const G_value_num=document.getElementById("G-value-number");
+if(G_value_range){
+    G_value_range.value=G_value;
+    G_value_range.addEventListener("change", (e)=>{
+        G_value=parseInt(e.target.value);
+        G_value_num.value=e.target.value;
+    });
+}
+if(G_value_num){
+    G_value_num.value=G_value;
+    G_value_num.addEventListener("change", (e)=>{
+        if(e.target.value.length>0&&isNumber(e.target.value)&&parseFloat(e.target.value)>0)
+        G_value=parseInt(e.target.value);
+        G_value_range.value=e.target.value;
+    });
+}

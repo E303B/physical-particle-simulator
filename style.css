@@ -12,7 +12,7 @@ body{
 }
 
 #settings{
-    background-color: rgb(161 161 161 / 0.75);
+    background-color: rgba(240, 240, 240, 0.61);
     overflow-y: scroll;
     min-width:25svw;
     min-height:100svh;
@@ -23,4 +23,26 @@ body{
     text-align: left;
     padding: 20px;
     border-radius:30px
+}
+
+.settings-container{
+    background-color:aliceblue;
+    border-radius:15px;
+    padding:10px;
+    direction: ltr;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+}
+
+input[type="number"]{
+  outline: none;
+  border: 2px solid #ccc;
+  border-radius: 4px;
+}
+
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
 }
