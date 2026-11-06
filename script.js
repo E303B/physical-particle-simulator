@@ -14,7 +14,9 @@ canvas.width=docWidth*0.7
 canvas.height=docHeight*0.975
 const context = canvas.getContext("2d");
 
-const dots = [];
+let dots = [];
+
+let walls=[];
 
 let G_value=6.67;
 let G_power=-8;
@@ -40,22 +42,74 @@ class Dot{
         context.drawCircle(this.color, (this.x-cameraX)*cameraSize, (this.y-cameraY)*cameraSize, cameraSize*this.size);
     }
     tick(tps){
-        this.x+=this.speedX/tps*temperature/100;
-        if (this.x>105)
-            this.x=5;
-        if (this.y<5)
-            this.x=105;
-        this.y+=this.speedY/tps*temperature/100;
-        if (this.y>85)
-            this.y=5;
-        if (this.y<5)
-            this.y=85;
+        const kx=Math.ceil(Math.abs(this.speedX/tps*temperature/100));
+        for(let i=0;i<kx;i++){
+            this.x+=this.speedX/tps*temperature/100/kx;
+            if(this.intersectsWithAWall()){
+                this.x-=this.speedX/tps*temperature/100/kx;
+                this.speedX=0;
+                break;
+            }
+        }
+        const ky=Math.ceil(Math.abs(this.speedY/tps*temperature/100));
+        for(let i=0;i<ky;i++){
+            this.y+=this.speedY/tps*temperature/100/ky;
+            if(this.intersectsWithAWall()){
+                this.y-=this.speedY/tps*temperature/100/ky;
+                this.speedY=0;
+                break;
+            }
+        }
+        // this.x+=this.speedX/tps*temperature/100;
+        // if(this.intersectsWithAWall()){
+        //     this.x-=this.speedX/tps*temperature/100;
+        //     this.speedX=0;
+        // }
+        // this.y+=this.speedY/tps*temperature/100;
+        // if(this.intersectsWithAWall()){
+        //     this.y-=this.speedY/tps*temperature/100;
+        //     this.speedY=0;
+        // }
+        if (this.x>100)
+            this.x=0;
+        if (this.x<0)
+            this.x=100;
+        if (this.y>100)
+            this.y=0;
+        if (this.y<0)
+            this.y=100;
         this.speedX*=Math.pow(friction,1/tps);
-        this.speedY*=Math.pow(friction,1/tps)
+        this.speedY*=Math.pow(friction,1/tps);
+    }
+    intersectsWithAWall(){
+        for(let i in walls){
+            const wall=walls[i];
+            if(wall.intersectsWithDot(this))return true;
+        }
+        return false;
+    }
+}
+
+class Wall{
+    constructor(x1, y1, x2, y2, color, width){
+        this.x1=x1;
+        this.y1=y1;
+        this.x2=x2;
+        this.y2=y2;
+        this.color=color;
+        this.width=width;
+    }
+    intersectsWithDot(dot){
+        return isCircleIntersectingLine(this.x1, this.y1, this.x2, this.y2, dot.x, dot.y, dot.size+this.width);
+    }
+    render(cameraX, cameraY, cameraSize){
+        context.drawLine(this.color, (this.x1-cameraX)*cameraSize, (this.y1-cameraY)*cameraSize, (this.x2-this.x1-cameraX)*cameraSize, (this.y2-this.y1-cameraY)*cameraSize, this.width*cameraSize)
     }
 }
 
 let currentTick=null;
+
+const destroyAllDots=()=>{dots=[];};
 
 const calculateForces=function(dots, tps){
     if(dots.length<2)return;
@@ -68,28 +122,39 @@ const calculateForces=function(dots, tps){
             const r=getDistance(doti.x, doti.y, dotj.x, dotj.y);
             const d=getDir(doti.x, doti.y, dotj.x,dotj.y);
             if(r<doti.size+dotj.size){
-                const centerX=(doti.x+dotj.x)/2;
-                const centerY=(doti.y+dotj.y)/2;
-                dotj.x=centerX+Math.sin(d)*(doti.size+dotj.size)/2;
-                dotj.y=centerY-Math.cos(d)*(doti.size+dotj.size)/2;
-                doti.x=centerX-Math.sin(d)*(doti.size+dotj.size)/2;
-                doti.y=centerY+Math.cos(d)*(doti.size+dotj.size)/2;
+                // const centerX=(doti.x+dotj.x)/2;
+                // const centerY=(doti.y+dotj.y)/2;
+                // dotj.x=centerX+Math.sin(d)*(doti.size+dotj.size)/2;
+                // dotj.y=centerY-Math.cos(d)*(doti.size+dotj.size)/2;
+                // doti.x=centerX-Math.sin(d)*(doti.size+dotj.size)/2;
+                // doti.y=centerY+Math.cos(d)*(doti.size+dotj.size)/2;
                 context.drawLine("#000000", dotj.x*cameraSize, dotj.y*cameraSize, (doti.x-dotj.x)*cameraSize, (doti.y-dotj.y)*cameraSize, 10)
+                const sumForce=getDistance(doti.speedX, doti.speedY)+getDistance(dotj.speedX, dotj.speedY)
+                const halfForce=sumForce/2;
+                doti.speedX=-Math.sin(d)*halfForce;
+                doti.speedY=-Math.cos(d)*halfForce;
+                dotj.speedX=Math.sin(d)*halfForce;
+                dotj.speedY=Math.cos(d)*halfForce;
             }
             if(r<minDist||r>maxDist)continue;
 
 
             const gravity=G_value*Math.pow(10, G_power)*doti.mass*dotj.mass/Math.pow(r, 2);
-            doti.speedX+=Math.sin(d)*gravity/tps;
-            doti.speedY+=Math.cos(d)*gravity/tps;
-            dotj.speedX-=Math.sin(d)*gravity/tps;
-            dotj.speedY-=Math.cos(d)*gravity/tps;
+            if(!Number.isNaN(gravity)){
 
-            const coulomb=C_value*Math.pow(10, C_power)*doti.charge*doti.charge/Math.pow(r, 2);
-            doti.speedX-=Math.sin(d)*coulomb/tps;
-            doti.speedY-=Math.cos(d)*coulomb/tps;
-            dotj.speedX+=Math.sin(d)*coulomb/tps;
-            dotj.speedY+=Math.cos(d)*coulomb/tps;
+                doti.speedX+=Math.sin(d)*gravity/tps;
+                doti.speedY+=Math.cos(d)*gravity/tps;
+                dotj.speedX-=Math.sin(d)*gravity/tps;
+                dotj.speedY-=Math.cos(d)*gravity/tps;
+            }
+
+            const coulomb=C_value*Math.pow(10, C_power)*doti.charge*dotj.charge/Math.pow(r, 2);
+            if (!Number.isNaN(coulomb)){
+                doti.speedX-=Math.sin(d)*coulomb/tps;
+                doti.speedY-=Math.cos(d)*coulomb/tps;
+                dotj.speedX+=Math.sin(d)*coulomb/tps;
+                dotj.speedY+=Math.cos(d)*coulomb/tps;
+            }
         }
     }
 }
@@ -99,6 +164,10 @@ let cameraX=0,cameraY=0;
 
 const tick = function(tps){
     context.drawRect("#f5f5f5", 0, 0, docWidth, docHeight)
+    for(let i in walls){
+        let wall = walls[i]
+        wall.render(cameraX, cameraY, cameraSize);
+    }
     for(let i in dots){
         let dot = dots[i]
         dot.render(cameraX, cameraY, cameraSize);
@@ -111,6 +180,11 @@ const tick = function(tps){
     currentTick=setInterval(tick, 1000/tps, tps)
 }
 
+walls.push(new Wall(5, 5, 85, 5, "#000000", 1));
+walls.push(new Wall(5, 5, 5, 85, "#000000", 1));
+walls.push(new Wall(85, 5, 85, 85, "#000000", 1));
+walls.push(new Wall(5, 85, 85, 85, "#000000", 1));
+
 
 const generateRandomDots=(N, rweight=-1)=>{
 
@@ -119,27 +193,27 @@ const generateRandomDots=(N, rweight=-1)=>{
         if(rweight==-1)weight=randomFloat(0.1, 100);
         else weight=rweight
         let charge=randomFloat(-10, 10);
-        dots.push(new Dot(randomFloat(0, 100), randomFloat(0, 100), weight, rgbToHex(255-Math.round((charge+10)/20*255), 0, Math.round((charge+10)/20*255)), Math.pow(weight, 1/8), charge))
+        dots.push(new Dot(randomFloat(10, 80), randomFloat(10, 80), weight, rgbToHex(255-Math.round((charge+10)/20*255), 0, Math.round((charge+10)/20*255)), Math.pow(weight, 1/8), charge))
     }
 }
 
 const generateProtons=(N)=>{
     for(let i=0;i<N;i++){
-        dots.push(new Dot(randomFloat(0, 100), randomFloat(0, 100), 1, "#FF0000", 1, 1))
+        dots.push(new Dot(randomFloat(10, 80), randomFloat(10, 80), 1, "#FF0000", 1, 1))
     }
 }
 
 
 const generateNeutrons=(N)=>{
     for(let i=0;i<N;i++){
-        dots.push(new Dot(randomFloat(0, 100), randomFloat(0, 100), 1, "#acacac", 1, 0))
+        dots.push(new Dot(randomFloat(10, 80), randomFloat(6, 84), 1, "#acacac", 1, 0))
     }
 }
 
 
 const generateElectrons=(N)=>{
     for(let i=0;i<N;i++){
-        dots.push(new Dot(randomFloat(0, 100), randomFloat(0, 100), 1, "#2f00ff", 1, -1))
+        dots.push(new Dot(randomFloat(10, 80), randomFloat(10, 80), 1, "#2f00ff", 1, -1))
     }
 }
 
