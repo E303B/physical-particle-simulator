@@ -20,12 +20,10 @@ let G_value=6.67;
 let G_power=-8;
 let minDist=5;
 let maxDist=50;
-let friction=0.9999;
-
+let friction=1;
 let C_value = 9;
 let C_power=-6;
-
-let temperature=1;
+let temperature=100;
 
 class Dot{
     constructor(x, y, mass, color, size, charge){
@@ -42,12 +40,12 @@ class Dot{
         context.drawCircle(this.color, (this.x-cameraX)*cameraSize, (this.y-cameraY)*cameraSize, cameraSize*this.size);
     }
     tick(tps){
-        this.x+=this.speedX/tps*temperature;
+        this.x+=this.speedX/tps*temperature/100;
         if (this.x>105)
             this.x=5;
         if (this.y<5)
             this.x=105;
-        this.y+=this.speedY/tps*temperature;
+        this.y+=this.speedY/tps*temperature/100;
         if (this.y>85)
             this.y=5;
         if (this.y<5)
@@ -72,10 +70,10 @@ const calculateForces=function(dots, tps){
             if(r<doti.size+dotj.size){
                 const centerX=(doti.x+dotj.x)/2;
                 const centerY=(doti.y+dotj.y)/2;
-                dotj.x=centerX+Math.sin(d)*(doti.size+dotj.size+1)/2;
-                dotj.y=centerY-Math.cos(d)*(doti.size+dotj.size+1)/2;
-                doti.x=centerX-Math.sin(d)*(doti.size+dotj.size+1)/2;
-                doti.y=centerY+Math.cos(d)*(doti.size+dotj.size+1)/2;
+                dotj.x=centerX+Math.sin(d)*(doti.size+dotj.size)/2;
+                dotj.y=centerY-Math.cos(d)*(doti.size+dotj.size)/2;
+                doti.x=centerX-Math.sin(d)*(doti.size+dotj.size)/2;
+                doti.y=centerY+Math.cos(d)*(doti.size+dotj.size)/2;
                 context.drawLine("#000000", dotj.x*cameraSize, dotj.y*cameraSize, (doti.x-dotj.x)*cameraSize, (doti.y-dotj.y)*cameraSize, 10)
             }
             if(r<minDist||r>maxDist)continue;
@@ -125,24 +123,28 @@ const generateRandomDots=(N, rweight=-1)=>{
     }
 }
 
+const generateProtons=(N)=>{
+    for(let i=0;i<N;i++){
+        dots.push(new Dot(randomFloat(0, 100), randomFloat(0, 100), 1, "#FF0000", 1, 1))
+    }
+}
 
-generateRandomDots(50, 1)
+
+const generateNeutrons=(N)=>{
+    for(let i=0;i<N;i++){
+        dots.push(new Dot(randomFloat(0, 100), randomFloat(0, 100), 1, "#acacac", 1, 0))
+    }
+}
+
+
+const generateElectrons=(N)=>{
+    for(let i=0;i<N;i++){
+        dots.push(new Dot(randomFloat(0, 100), randomFloat(0, 100), 1, "#2f00ff", 1, -1))
+    }
+}
+
+generateElectrons(50);
+generateNeutrons(50);
+generateProtons(50)
+
 tick(50);
-
-const G_value_range=document.getElementById("G-value-range");
-const G_value_num=document.getElementById("G-value-number");
-if(G_value_range){
-    G_value_range.value=G_value;
-    G_value_range.addEventListener("change", (e)=>{
-        G_value=parseInt(e.target.value);
-        G_value_num.value=e.target.value;
-    });
-}
-if(G_value_num){
-    G_value_num.value=G_value;
-    G_value_num.addEventListener("change", (e)=>{
-        if(e.target.value.length>0&&isNumber(e.target.value)&&parseFloat(e.target.value)>0)
-        G_value=parseInt(e.target.value);
-        G_value_range.value=e.target.value;
-    });
-}

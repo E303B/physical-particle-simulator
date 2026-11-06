@@ -5,6 +5,7 @@
         <script src="./drawing.js" defer></script>
         <script src="./tools.js" defer></script>
         <script src="./script.js" defer></script>
+        <script src="./connections.js" defer></script>
         <link href="./style.css" rel="stylesheet"/>
     </head>
     <body>
@@ -12,10 +13,58 @@
             <div class="settings-container">
                 Множитель G<br>
                 <!-- <div style="text-overflow: ellipsis;">Непосредственный множитель в формуле Закона Всемирного тяготения Ньютона. Более высокие значения могут привести к более хаотичным результатам, в то время как более низкие значения могут замедлить реакцию между частицами</div><br> -->
-                <input type="number" id="G-value-number" placeholder="Стандартное - 6.67" value="1"><br>
+                <input type="number" id="G-value-number" placeholder="Стандартное = 6.67" value="6.67"><br>
                 <input type="range" id="G-value-range" min="0" max="20" value="1" step="0.01">
-            </div>
+            </div><br>
+            <div class="settings-container">
+                Степень G<br>
+                <!-- <div style="text-overflow: ellipsis;">Непосредственный множитель в формуле Закона Всемирного тяготения Ньютона. Более высокие значения могут привести к более хаотичным результатам, в то время как более низкие значения могут замедлить реакцию между частицами</div><br> -->
+                <input type="number" id="G-power-number" placeholder="Стандартное = -8" value="-8"><br>
+                <input type="range" id="G-power-range" min="-20" max="4" value="-8" step="1">
+            </div><br>
+            <br>
+            <div class="settings-container">
+                Множитель k<br>
+                <!-- <div style="text-overflow: ellipsis;">Непосредственный множитель в формуле Закона Всемирного тяготения Ньютона. Более высокие значения могут привести к более хаотичным результатам, в то время как более низкие значения могут замедлить реакцию между частицами</div><br> -->
+                <input type="number" id="C-value-number" placeholder="Стандартное = 9" value="9"><br>
+                <input type="range" id="C-value-range" min="0" max="20" value="1" step="0.01">
+            </div><br>
+            <div class="settings-container">
+                Степень K<br>
+                <!-- <div style="text-overflow: ellipsis;">Непосредственный множитель в формуле Закона Всемирного тяготения Ньютона. Более высокие значения могут привести к более хаотичным результатам, в то время как более низкие значения могут замедлить реакцию между частицами</div><br> -->
+                <input type="number" id="C-power-number" placeholder="Стандартное = -6" value="-6"><br>
+                <input type="range" id="C-power-range" min="-20" max="4" value="-6" step="1">
+            </div><br>
+            <br>
+            <div class="settings-container">
+                Температура<br>
+                <!-- <div style="text-overflow: ellipsis;">Непосредственный множитель в формуле Закона Всемирного тяготения Ньютона. Более высокие значения могут привести к более хаотичным результатам, в то время как более низкие значения могут замедлить реакцию между частицами</div><br> -->
+                <input type="number" id="Temperature-number" placeholder="Стандартное = 100" value="100"><br>
+                <input type="range" id="Temperature-range" min="0" max="1000" value="100" step="1">
+            </div><br>
+            <div class="settings-container">
+                Замедление<br>
+                <!-- <div style="text-overflow: ellipsis;">Непосредственный множитель в формуле Закона Всемирного тяготения Ньютона. Более высокие значения могут привести к более хаотичным результатам, в то время как более низкие значения могут замедлить реакцию между частицами</div><br> -->
+                <input type="number" id="Friction-number" placeholder="Стандартное = 1" value="1"><br>
+                <input type="range" id="Friction-range" min="0.9" max="1" value="1" step="any">
+            </div><br>
+            <br>
+            <br>
+            <div class="settings-container">
+                Минимальное расстояние<br>
+                <!-- <div style="text-overflow: ellipsis;">Непосредственный множитель в формуле Закона Всемирного тяготения Ньютона. Более высокие значения могут привести к более хаотичным результатам, в то время как более низкие значения могут замедлить реакцию между частицами</div><br> -->
+                <input type="number" id="Min-dist-number" placeholder="Стандартное = 5" value="5"><br>
+                <input type="range" id="Min-dist-range" min="0" max="200" value="5" step="any">
+            </div><br>
+            <div class="settings-container">
+                Максимальное расстояние<br>
+                <!-- <div style="text-overflow: ellipsis;">Непосредственный множитель в формуле Закона Всемирного тяготения Ньютона. Более высокие значения могут привести к более хаотичным результатам, в то время как более низкие значения могут замедлить реакцию между частицами</div><br> -->
+                <input type="number" id="Max-dist-number" placeholder="Стандартное = 50" value="50"><br>
+                <input type="range" id="Max-dist-range" min="0" max="200" value="50" step="any">
+            </div><br>
+            <br>
         </div>
+            <br>
         <canvas id="canvas" width="1000px" height="1000px"></canvas>
     </body>
 </html>
